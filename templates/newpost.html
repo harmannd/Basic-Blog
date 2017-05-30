@@ -1,1 +1,58 @@
-<h2>Hello there</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title> Basic Blog</title>
+</head>
+
+<style type="text/css">
+    body {
+        max-width: 500px;
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    h1 {
+        text-align: right;
+        font-size: 40px;
+        font-weight: bold;
+    }
+
+    input[type=text] {
+        width: 100%;
+    }
+
+    textarea {
+        width: 100%;
+        height: 500px;
+    }
+
+    .error {
+        color: red;
+    }
+</style>
+
+<body>
+    <h1>Basic Blog</h1>
+
+    <h3>New Post</h3>
+
+    <form method="Post">
+        <label>Subject</label>
+        <br>
+        <input type="text" name="subject" value="{{subject}}">
+
+        <br>
+        <br>
+
+        <label>Blog</label>
+        <br>
+        <textarea name="blog">{{blog}}</textarea>
+
+        <br>
+        <div class="error">{{input_error}}</div>
+        <br>
+
+        <input type="submit">
+    </form>
+</body>
+</html>
