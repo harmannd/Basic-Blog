@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Basic Blog</title>
+    <title>Blog Post Added!</title>
 </head>
 
 <style type="text/css">
@@ -43,15 +43,13 @@
 <body>
     <h1>Basic Blog</h1>
 
-    {% for blogpost in blogposts %}
-        <div class="container">
-            <h3>{{blogpost.subject}}</h3>
-            <p>{{blogpost.created.strftime("%d %b %Y")}}</p>
-        </div>
+    <div class="container">
+        <h3>{{blogpost.subject}}</h3>
+        <p>{{blogpost.created.strftime("%d %b %Y")}}</p>
+    </div>
 
-        <hr>
+    <hr>
 
-        <pre>{{blogpost.blog}}</pre>
-    {% endfor %}
+    <pre>{{blogpost.blog}}</pre>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import os
 import jinja2
 import webapp2
+import re
 
 from google.appengine.ext import db
 
@@ -27,8 +28,13 @@ class Handler(webapp2.RequestHandler):
 class MainPage(Handler):
     def get(self):
         blogposts = db.GqlQuery("SELECT * FROM BlogPost "
-                                "ORDER By created DESC ")
+                                "ORDER By created DESC LIMIT 10")
         self.render('blogposts.html', blogposts = blogposts)
+
+class NewAddedPost(Handler):
+    def get(self, post_id):
+        blogpost = BlogPost.get_by_id(int(post_id))
+        self.render('newaddedpost.html', blogpost = blogpost)
 
 class NewPost(Handler):
     def get(self):
@@ -41,10 +47,12 @@ class NewPost(Handler):
         if subject and blog:
             b = BlogPost(subject = subject, blog = blog)
             b.put()
-            self.redirect('/blog')
+
+            self.redirect('/blog/{}'.format(b.key().id()))
         else:
             self.render('newpost.html', subject = subject, blog = blog, input_error = "Subject and content, please!")
 
 app = webapp2.WSGIApplication([('/blog', MainPage),
-                               ('/blog/newpost', NewPost)],
+                               ('/blog/newpost', NewPost),
+                               ('/blog/(\d+)', NewAddedPost)],
                                 debug=True)
