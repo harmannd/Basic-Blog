@@ -11,7 +11,7 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 
 class BlogPost(db.Model):
     subject = db.StringProperty(required = True)
-    blog = db.TextProperty(required = True)
+    content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
 class Handler(webapp2.RequestHandler):
@@ -42,15 +42,15 @@ class NewPost(Handler):
 
     def post(self):
         subject = self.request.get('subject')
-        blog = self.request.get('blog')
+        content = self.request.get('content')
 
-        if subject and blog:
-            b = BlogPost(subject = subject, blog = blog)
+        if subject and content:
+            b = BlogPost(subject = subject, content = content)
             b.put()
 
             self.redirect('/blog/{}'.format(b.key().id()))
         else:
-            self.render('newpost.html', subject = subject, blog = blog, input_error = "Subject and content, please!")
+            self.render('newpost.html', subject = subject, content = content, input_error = "Subject and content, please!")
 
 app = webapp2.WSGIApplication([('/blog', MainPage),
                                ('/blog/newpost', NewPost),

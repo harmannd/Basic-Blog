@@ -45,13 +45,13 @@
 
     {% for blogpost in blogposts %}
         <div class="container">
-            <h3>{{blogpost.subject}}</h3>
-            <p>{{blogpost.created.strftime("%d %b %Y")}}</p>
+            <h3 name="subject">{{blogpost.subject}}</h3>
+            <p name="date">{{blogpost.created.strftime("%d %b %Y")}}</p>
         </div>
 
         <hr>
 
-        <pre>{{blogpost.blog}}</pre>
+        <pre name="content">{{blogpost.content}}</pre>
     {% endfor %}
 </body>
 </html>
