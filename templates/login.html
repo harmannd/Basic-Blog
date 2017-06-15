@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Login</title>
+
+    <link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+    <h2>Login</h2>
+    <form method="post">
+        <div class="group">
+            <label>Username</label>
+            <input type="text" name="username" value="{{ username }}">
+        </div>
+
+        <div class="group">
+            <label>Password</label>
+            <input type="password" name="password">
+        </div>
+
+        <div class="error">{{ error }}</div>
+        <br>
+
+        <input type="submit">
+    </form>
+</body>
+</html>

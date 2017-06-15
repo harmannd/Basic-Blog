@@ -8,23 +8,20 @@
 <body>
     <h1>Basic Blog</h1>
 
-    <h3>New Post</h3>
-
+    <h3>Edit Post</h3>
+    <div class="error">{{ error }}</div>
     <form method="Post">
+        <input class="hidden" name="post_id" value="{{ blogpost.key().id() }}">
         <label>Subject</label>
         <br>
-        <input id="subject" type="text" name="subject" value="{{ subject }}">
+        <input id="subject" type="text" name="subject" value="{{ blogpost.subject }}">
 
         <br>
         <br>
 
         <label>Blog</label>
         <br>
-        <textarea name="content">{{ content }}</textarea>
-
-        <br>
-        <div class="error">{{ input_error }}</div>
-        <br>
+        <textarea name="content">{{ blogpost.content }}</textarea>
 
         <input type="submit">
     </form>
