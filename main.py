@@ -52,8 +52,9 @@ def valid_pw(name, password, hexhash_salt):
     salt = hexhash_salt.split(',')[1]
     return hexhash_salt == make_pw_hash(name, password, salt)
 
-
-
+class Like(db.Model):
+    post_id = db.StringProperty(required = True)
+    user_id = db.StringProperty(required = True)
 
 class User(db.Model):
     name = db.StringProperty(required = True)
@@ -65,6 +66,7 @@ class BlogPost(db.Model):
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
     creator_id = db.StringProperty(required = True)
+    likes = db.IntegerProperty(default = 0)
 
 
 class Handler(webapp2.RequestHandler):
@@ -102,11 +104,24 @@ class Handler(webapp2.RequestHandler):
     def logout(self):
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
 
+    def get_post_likes(self, post_id):
+        return db.GqlQuery("SELECT * FROM Like "
+                           "WHERE Like.post_id == :1 ", post_id)
+
+    def get_posts(self):
+        return db.GqlQuery("SELECT * FROM BlogPost "
+                           "ORDER By created DESC LIMIT 10 ")
+
+    def already_liked_post(self, post_id, user_id):
+        likes = Like.all()
+        return likes.filter('post_id =', post_id).filter('user_id =', user_id).fetch(1)
+
 class BlogHandler(Handler):
     def get(self):
-        blogposts = db.GqlQuery("SELECT * FROM BlogPost "
-                                "ORDER By created DESC LIMIT 10")
-        self.render('blogposts.html', blogposts = blogposts)
+        blogposts = self.get_posts()
+        error = self.request.get('error')
+
+        self.render('blogposts.html', blogposts = blogposts, error = error)
 
     def post(self):
         creator_id = self.request.get('creator_id')
@@ -114,10 +129,12 @@ class BlogHandler(Handler):
         user_id = self.user_id_cookie()
 
         if user_id and self.get_user_by_id(user_id):
-            if self.request.get('edit_button', None):
+            if self.request.get('edit', None):
                 self.edit(user_id, creator_id, post_id)
-            elif self.request.get('delete_button', None):
+            elif self.request.get('delete', None):
                 self.delete(user_id, creator_id, post_id)
+            elif self.request.get('like', None):
+                self.like(user_id, creator_id, post_id)
             else:
                 self.write("Other")
         else:
@@ -136,6 +153,26 @@ class BlogHandler(Handler):
             self.redirect('/blog')
         else:
             self.redirect('/blog?error=' + 'Sorry, you can only delete posts made by you.')
+
+    def like(self, user_id, creator_id, post_id):
+        if user_id != creator_id:
+            already_liked = self.already_liked_post(post_id, user_id)
+            blogpost = self.get_post_by_id(post_id)
+
+            if len(already_liked) > 0:
+                already_liked[0].delete()
+                blogpost.likes -= 1
+                blogpost.put()
+
+            else:
+                like = Like(post_id = post_id, user_id = user_id)
+                like.put()
+                blogpost.likes += 1
+                blogpost.put()
+
+            self.redirect('/blog')
+        else:
+            self.redirect('/blog?error=' + 'Sorry, you can not like your own posts')
 
 class NewAddedPostHandler(Handler):
     def get(self, post_id):
@@ -226,7 +263,7 @@ class LoginHandler(Handler):
         username = self.request.get('username')
         password = self.request.get('password')
         users = db.GqlQuery("SELECT * FROM User "
-                           "WHERE name = :1", username).fetch(limit = None)
+                            "WHERE name = :1", username).fetch(limit = None)
 
         if username and password and len(users) > 0:
             for user in users:

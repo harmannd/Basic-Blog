@@ -10,8 +10,8 @@
     <div class="error" name="error">{{ error }}</div>
     {% for blogpost in blogposts %}
         <form method="post">
-            <input name="creator_id" class="hidden" value="{{ blogpost.creator_id }}" />
-            <input name="post_id" class="hidden" value="{{ blogpost.key().id() }}" />
+            <input name="creator_id" class="hidden" value="{{ blogpost.creator_id }}">
+            <input name="post_id" class="hidden" value="{{ blogpost.key().id() }}">
             <div class="container">
                 <h3 name="subject">{{ blogpost.subject }}</h3>
                 <p name="date">{{ blogpost.created.strftime("%d %b %Y") }}</p>
@@ -21,8 +21,10 @@
 
             <pre name="content">{{ blogpost.content }}</pre>
 
-            <input type="submit" name="edit_button" value="Edit" />
-            <input type="submit" name="delete_button" value="Delete" />
+            <input type="submit" name="edit" value="Edit">
+            <input type="submit" name="delete" value="Delete">
+            <input type="submit" name="like" value="Like">
+            <div name="likes">{{ blogpost.likes }}</div>
         </form>
     {% endfor %}
 </body>
