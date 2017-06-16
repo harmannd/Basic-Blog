@@ -52,9 +52,20 @@ def valid_pw(name, password, hexhash_salt):
     salt = hexhash_salt.split(',')[1]
     return hexhash_salt == make_pw_hash(name, password, salt)
 
-class Like(db.Model):
+class PostLike(db.Model):
     post_id = db.StringProperty(required = True)
     user_id = db.StringProperty(required = True)
+
+class CommentLike(db.Model):
+    comment_id = db.StringProperty(required = True)
+    user_id = db.StringProperty(required = True)
+
+class Comment(db.Model):
+    post_id = db.ReferenceProperty(required = True)
+    creator_id = db.StringProperty(required = True)
+    content = db.TextProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
+    likes = db.IntegerProperty(default = 0)
 
 class User(db.Model):
     name = db.StringProperty(required = True)
@@ -105,48 +116,64 @@ class Handler(webapp2.RequestHandler):
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
 
     def get_post_likes(self, post_id):
-        return db.GqlQuery("SELECT * FROM Like "
-                           "WHERE Like.post_id == :1 ", post_id)
+        return PostLike.all().filter('post_id =', post_id)
 
     def get_posts(self):
-        return db.GqlQuery("SELECT * FROM BlogPost "
-                           "ORDER By created DESC LIMIT 10 ")
+        return BlogPost.all().fetch(10)
 
     def already_liked_post(self, post_id, user_id):
-        likes = Like.all()
-        return likes.filter('post_id =', post_id).filter('user_id =', user_id).fetch(1)
+        return PostLike.all().filter('post_id =', post_id).filter('user_id =', user_id).fetch(1)
+
+    def user_exists(self, username):
+        return User.all().filter('name =', username).fetch(1)
+
+    def get_comment_by_id(self, comment_id):
+        return Comment.get_by_id(int(comment_id))
+
+    def already_liked_comment(self, comment_id, user_id):
+        return CommentLike.all().filter('comment_id =', comment_id).filter('user_id =', user_id).fetch(1)
 
 class BlogHandler(Handler):
     def get(self):
         blogposts = self.get_posts()
         error = self.request.get('error')
+        comments = Comment.all()
 
-        self.render('blogposts.html', blogposts = blogposts, error = error)
+        self.render('blogposts.html', blogposts = blogposts, comments = comments, error = error)
 
     def post(self):
-        creator_id = self.request.get('creator_id')
-        post_id = self.request.get('post_id')
         user_id = self.user_id_cookie()
 
         if user_id and self.get_user_by_id(user_id):
-            if self.request.get('edit', None):
-                self.edit(user_id, creator_id, post_id)
-            elif self.request.get('delete', None):
-                self.delete(user_id, creator_id, post_id)
-            elif self.request.get('like', None):
-                self.like(user_id, creator_id, post_id)
-            else:
-                self.write("Other")
+            creator_id = self.request.get('creator_id')
+            post_id = self.request.get('post_id')
+            comment_id = self.request.get('comment_id')
+            content = self.request.get('content')
+
+            if self.request.get('edit_post', None):
+                self.edit_post(user_id, creator_id, post_id)
+            elif self.request.get('delete_post', None):
+                self.delete_post(user_id, creator_id, post_id)
+            elif self.request.get('like_post', None):
+                self.like_post(user_id, creator_id, post_id)
+            elif self.request.get('submit_comment', None):
+                self.comment(user_id, post_id, content)
+            elif self.request.get('edit_comment', None):
+                self.edit_comment(user_id, creator_id, comment_id)
+            elif self.request.get('delete_comment', None):
+                self.delete_comment(user_id, creator_id, comment_id)
+            elif self.request.get('like_comment', None):
+                self.like_comment(user_id, creator_id, comment_id)
         else:
             self.redirect('../login?error=' + 'Please login before contributing to the blog.')
 
-    def edit(self, user_id, creator_id, post_id):
+    def edit_post(self, user_id, creator_id, post_id):
         if user_id == creator_id:
-           self.redirect('/blog/edit?post_id=' + post_id)
+           self.redirect('/blog/edit-post?post_id=' + post_id)
         else:
            self.redirect('/blog?error=' + 'Sorry, you can only edit posts made by you.')
 
-    def delete(self, user_id, creator_id, post_id):
+    def delete_post(self, user_id, creator_id, post_id):
         if user_id == creator_id:
             blogpost = self.get_post_by_id(post_id)
             blogpost.delete()
@@ -154,7 +181,7 @@ class BlogHandler(Handler):
         else:
             self.redirect('/blog?error=' + 'Sorry, you can only delete posts made by you.')
 
-    def like(self, user_id, creator_id, post_id):
+    def like_post(self, user_id, creator_id, post_id):
         if user_id != creator_id:
             already_liked = self.already_liked_post(post_id, user_id)
             blogpost = self.get_post_by_id(post_id)
@@ -165,14 +192,56 @@ class BlogHandler(Handler):
                 blogpost.put()
 
             else:
-                like = Like(post_id = post_id, user_id = user_id)
+                like = PostLike(post_id = post_id, user_id = user_id)
                 like.put()
                 blogpost.likes += 1
                 blogpost.put()
 
             self.redirect('/blog')
         else:
-            self.redirect('/blog?error=' + 'Sorry, you can not like your own posts')
+            self.redirect('/blog?error=' + 'Sorry, you can not like your own posts.')
+
+    def comment(self, creator_id, post_id, content):
+        blogpost = self.get_post_by_id(post_id)
+        comment = Comment(post_id = blogpost.key(), creator_id = creator_id, content = content)
+        comment.put()
+
+        self.redirect('/blog')
+
+    def edit_comment(self, user_id, creator_id, comment_id):
+        if user_id == creator_id:
+            self.redirect('/blog/edit-comment?comment_id=' + comment_id)
+        else:
+            self.redirect('/blog?error=' + 'Sorry, you can only edit your own comments.')
+
+    def delete_comment(self, user_id, creator_id, comment_id):
+        if user_id == creator_id:
+            comment = self.get_comment_by_id(comment_id)
+            comment.delete()
+            self.redirect('/blog')
+        else:
+            self.redirect('/blog?error=' + 'Sorry, you can only delete comments made by you.')
+
+    def like_comment(self, user_id, creator_id, comment_id):
+        if user_id != creator_id:
+            already_liked = self.already_liked_comment(comment_id, user_id)
+            comment = self.get_comment_by_id(comment_id)
+
+            if len(already_liked) > 0:
+                already_liked[0].delete()
+                comment.likes -= 1
+                comment.put()
+
+            else:
+                like = CommentLike(comment_id = comment_id, user_id = user_id)
+                like.put()
+                comment.likes += 1
+                comment.put()
+
+            self.redirect('/blog')
+        else:
+            self.redirect('/blog?error=' + 'Sorry, you can not like your own comments.')
+
 
 class NewAddedPostHandler(Handler):
     def get(self, post_id):
@@ -213,9 +282,14 @@ class SignupHandler(Handler):
         password = self.request.get('password')
         verify = self.request.get('verify')
         email = self.request.get('email')
+        name_used = self.user_exists(username)
 
         params = dict(username = username,
                       email = email)
+
+        if len(name_used) > 0:
+            params['error_username_exists'] = "Username already exists."
+            error = True
 
         if not valid_username(username):
             params['error_username'] = "That's not a valid username."
@@ -262,14 +336,12 @@ class LoginHandler(Handler):
     def post(self):
         username = self.request.get('username')
         password = self.request.get('password')
-        users = db.GqlQuery("SELECT * FROM User "
-                            "WHERE name = :1", username).fetch(limit = None)
+        user = self.user_exists(username)
 
-        if username and password and len(users) > 0:
-            for user in users:
-                if valid_pw(username, password, user.pw_hash):
-                    self.login(user)
-                    self.redirect('/welcome')
+        if username and password and len(user) > 0:
+            if valid_pw(username, password, user[0].pw_hash):
+                self.login(user)
+                self.redirect('/welcome')
         else:
             self.render('login.html', error = "Invalid login")
 
@@ -278,13 +350,13 @@ class LogoutHandler(Handler):
         self.logout()
         self.redirect('/signup')
 
-class EditHandler(Handler):
+class EditPostHandler(Handler):
     def get(self):
         error = self.request.get('error')
         post_id = self.request.get('post_id')
         blogpost = self.get_post_by_id(post_id)
 
-        self.render('edit.html', blogpost = blogpost, error = error)
+        self.render('edit-post.html', blogpost = blogpost, error = error)
 
     def post(self):
         subject = self.request.get('subject')
@@ -299,7 +371,28 @@ class EditHandler(Handler):
 
             self.redirect('/blog')
         else:
-            self.redirect('/blog/edit?error={}&post_id={}'.format('Subject and content can not be empty.', post_id))
+            self.redirect('/blog/edit-post?error={}&post_id={}'.format('Subject and content can not be empty.', post_id))
+
+class EditCommentHandler(Handler):
+    def get(self):
+        comment_id = self.request.get('comment_id')
+        comment = self.get_comment_by_id(comment_id)
+
+        self.render('edit-comment.html', comment = comment)
+
+    def post(self):
+        comment_id = self.request.get('comment_id')
+        content = self.request.get('content')
+
+        if comment_id and content:
+            comment = self.get_comment_by_id(comment_id)
+            comment.content = content
+            comment.put()
+
+            self.redirect('/blog')
+        else:
+            self.redirect('/blog/edit-comment?error={}&comment_id={}'.format('Please enter a comment', comment_id))
+
 
 app = webapp2.WSGIApplication([('/blog', BlogHandler),
                                ('/blog/newpost', NewPostHandler),
@@ -308,5 +401,6 @@ app = webapp2.WSGIApplication([('/blog', BlogHandler),
                                ('/welcome', WelcomeHandler),
                                ('/login', LoginHandler),
                                ('/logout', LogoutHandler),
-                               ('/blog/edit', EditHandler)],
+                               ('/blog/edit-post', EditPostHandler),
+                               ('/blog/edit-comment', EditCommentHandler)],
                                 debug=True)

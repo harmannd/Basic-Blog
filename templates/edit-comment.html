@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic Blog</title>
+
+    <link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+    <h1>Basic Blog</h1>
+
+    <h3>Edit Comment</h3>
+    <div class="error">{{ error }}</div>
+    <form method="post">
+        <input class="hidden" name="comment_id" value="{{ comment.key().id() }}">
+        <textarea class="comment" name="content">{{ comment.content }}</textarea>
+
+        <input type="submit" name="submit_comment" value="Submit">
+    </form>
+</body>
+</html>

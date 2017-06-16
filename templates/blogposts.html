@@ -21,11 +21,39 @@
 
             <pre name="content">{{ blogpost.content }}</pre>
 
-            <input type="submit" name="edit" value="Edit">
-            <input type="submit" name="delete" value="Delete">
-            <input type="submit" name="like" value="Like">
-            <div name="likes">{{ blogpost.likes }}</div>
+            <div class="group">
+                <input type="submit" name="edit_post" value="Edit">
+                <input type="submit" name="delete_post" value="Delete">
+                <input type="submit" name="like_post" value="Like">
+                <div class="likes" name="likes">{{ blogpost.likes }}</div>
+            </div>
+
         </form>
+        <div class="comments">
+            <h4>Comments</h4>
+            {% for comment in comments %}
+                {% if comment.post_id.key() == blogpost.key() %}
+                    <form method="post">
+                        <input name="creator_id" class="hidden" value="{{ comment.creator_id }}">
+                        <input name="comment_id" class="hidden" value="{{ comment.key().id() }}">
+                        <div>{{ comment.content }}</div>
+
+                        <div class="group">
+                            <input type="submit" name="edit_comment" value="Edit">
+                            <input type="submit" name="delete_comment" value="Delete">
+                            <input type="submit" name="like_comment" value="Like">
+                            <div class="likes" name="likes">{{ comment.likes }}</div>
+                        </div>
+                    </form>
+                {% endif %}
+            {% endfor %}
+            <form method="post">
+                <h5>New Comment</h5>
+                <input name="post_id" class="hidden" value="{{ blogpost.key().id() }}">
+                <textarea class="comment" name="content"></textarea>
+                <input type="submit" name="submit_comment" value="Submit">
+            </form>
+        </div>
     {% endfor %}
 </body>
 
