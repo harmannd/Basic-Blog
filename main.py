@@ -119,25 +119,25 @@ class Handler(webapp2.RequestHandler):
         return PostLike.all().filter('post_id =', post_id)
 
     def get_posts(self):
-        return BlogPost.all().fetch(10)
+        return BlogPost.all().order('-created').fetch(10)
 
     def already_liked_post(self, post_id, user_id):
-        return PostLike.all().filter('post_id =', post_id).filter('user_id =', user_id).fetch(1)
+        return PostLike.all().filter('post_id =', post_id).filter('user_id =', user_id).get()
 
     def user_exists(self, username):
-        return User.all().filter('name =', username).fetch(1)
+        return User.all().filter('name =', username).get()
 
     def get_comment_by_id(self, comment_id):
         return Comment.get_by_id(int(comment_id))
 
     def already_liked_comment(self, comment_id, user_id):
-        return CommentLike.all().filter('comment_id =', comment_id).filter('user_id =', user_id).fetch(1)
+        return CommentLike.all().filter('comment_id =', comment_id).filter('user_id =', user_id).get()
 
 class BlogHandler(Handler):
     def get(self):
         blogposts = self.get_posts()
         error = self.request.get('error')
-        comments = Comment.all()
+        comments = Comment.all().order('created')
 
         self.render('blogposts.html', blogposts = blogposts, comments = comments, error = error)
 

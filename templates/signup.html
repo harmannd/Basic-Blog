@@ -9,26 +9,26 @@
     <h2>Signup</h2>
     <form method="post">
         <div class="group">
-            <label>Username</label>
+            <label class="field">Username</label>
             <input type="text" name="username" value="{{ username }}">
             <div class="error">{{ error_username }}</div>
             <div class="error">{{ error_username_exists }}</div>
         </div>
 
         <div class="group">
-            <label>Password</label>
+            <label class="field">Password</label>
             <input type="password" name="password">
             <div class="error"> {{ error_password }}</div>
         </div>
 
         <div class="group">
-            <label>Verify Password</label>
+            <label class="field">Verify Password</label>
             <input type="password" name="verify">
             <div class="error"> {{ error_verify_password }}</div>
         </div>
 
         <div class="group">
-            <label>Email (optional)</label>
+            <label class="field">Email (optional)</label>
             <input type="text" name="email">
             <div class="error"> {{ error_email }}</div>
         </div>

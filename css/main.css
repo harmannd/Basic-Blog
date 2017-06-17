@@ -41,29 +41,9 @@ hr {
     margin: 0 0 0 0;
 }
 
-#subject {
-    width: 100%;
-}
-
-.post {
-    width: 100%;
-    height: 500px;
-}
-
-.comment {
-    width: 100%;
-    height: 30px;
-}
-
 .likes {
     color: green;
     padding-left: 5px;
-}
-
-label {
-    width: 120px;
-    text-align: right;
-    padding-right: 5px;
 }
 
 .error {
@@ -76,9 +56,70 @@ label {
 
 input[type=submit] {
     max-width: 80px;
+    width: 100%;
+    margin-right: 5px;
 }
 
+/*
+* Signup/Login
+*/
+.field {
+    width: 120px;
+    text-align: right;
+    padding-right: 5px;
+}
+
+
+/*
+* Posts
+*/
+.post {
+    width: 100%;
+    height: 500px;
+}
+
+#subject {
+    width: 100%;
+}
+
+.content {
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+
+/*
+* Comments
+*/
 .comments {
     width: 80%;
-    padding-left: 20px;
+    padding-left: 30px;
+    margin-bottom: 30px;
+}
+
+.comment {
+    width: 100%;
+    height: 30px;
+}
+
+.comment_title {
+    margin-bottom: 0;
+    margin-top: 10px;
+}
+
+.comment_hr {
+    margin-bottom: 10px;
+}
+
+.single_comment {
+    padding-bottom: 10px;
+}
+
+.comment_content {
+    padding-bottom: 5px;
+}
+
+.new_comment_title {
+    margin-top: 15px;
+    margin-bottom: 5px;
 }
