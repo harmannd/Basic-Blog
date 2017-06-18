@@ -133,6 +133,21 @@ class Handler(webapp2.RequestHandler):
     def already_liked_comment(self, comment_id, user_id):
         return CommentLike.all().filter('comment_id =', comment_id).filter('user_id =', user_id).get()
 
+    def nav_bar_action(self):
+        if self.request.get('home', None):
+            self.redirect('/blog')
+        elif self.request.get('newpost', None):
+            self.redirect('/blog/newpost')
+        elif self.request.get('signup', None):
+            self.redirect('/signup')
+        elif self.request.get('login', None):
+            self.redirect('/login')
+        elif self.request.get('logout', None):
+            self.redirect('/logout')
+        else:
+            return False
+
+
 class BlogHandler(Handler):
     def get(self):
         blogposts = self.get_posts()
@@ -142,30 +157,31 @@ class BlogHandler(Handler):
         self.render('blogposts.html', blogposts = blogposts, comments = comments, error = error)
 
     def post(self):
-        user_id = self.user_id_cookie()
+        if self.nav_bar_action() == False:
+            user_id = self.user_id_cookie()
 
-        if user_id and self.get_user_by_id(user_id):
-            creator_id = self.request.get('creator_id')
-            post_id = self.request.get('post_id')
-            comment_id = self.request.get('comment_id')
-            content = self.request.get('content')
+            if user_id and self.get_user_by_id(user_id):
+                creator_id = self.request.get('creator_id')
+                post_id = self.request.get('post_id')
+                comment_id = self.request.get('comment_id')
+                content = self.request.get('content')
 
-            if self.request.get('edit_post', None):
-                self.edit_post(user_id, creator_id, post_id)
-            elif self.request.get('delete_post', None):
-                self.delete_post(user_id, creator_id, post_id)
-            elif self.request.get('like_post', None):
-                self.like_post(user_id, creator_id, post_id)
-            elif self.request.get('submit_comment', None):
-                self.comment(user_id, post_id, content)
-            elif self.request.get('edit_comment', None):
-                self.edit_comment(user_id, creator_id, comment_id)
-            elif self.request.get('delete_comment', None):
-                self.delete_comment(user_id, creator_id, comment_id)
-            elif self.request.get('like_comment', None):
-                self.like_comment(user_id, creator_id, comment_id)
-        else:
-            self.redirect('../login?error=' + 'Please login before contributing to the blog.')
+                if self.request.get('edit_post', None):
+                    self.edit_post(user_id, creator_id, post_id)
+                elif self.request.get('delete_post', None):
+                    self.delete_post(user_id, creator_id, post_id)
+                elif self.request.get('like_post', None):
+                    self.like_post(user_id, creator_id, post_id)
+                elif self.request.get('submit_comment', None):
+                    self.comment(user_id, post_id, content)
+                elif self.request.get('edit_comment', None):
+                    self.edit_comment(user_id, creator_id, comment_id)
+                elif self.request.get('delete_comment', None):
+                    self.delete_comment(user_id, creator_id, comment_id)
+                elif self.request.get('like_comment', None):
+                    self.like_comment(user_id, creator_id, comment_id)
+            else:
+                self.redirect('../login?error=' + 'Please login before contributing to the blog.')
 
     def edit_post(self, user_id, creator_id, post_id):
         if user_id == creator_id:
@@ -248,6 +264,9 @@ class NewAddedPostHandler(Handler):
         blogpost = self.get_post_by_id(post_id)
         self.render('newaddedpost.html', blogpost = blogpost)
 
+    def post(self):
+        self.nav_bar_action()
+
 class NewPostHandler(Handler):
     def get(self):
         user_id = self.user_id_cookie()
@@ -258,18 +277,19 @@ class NewPostHandler(Handler):
             self.redirect('../login?error=' + 'Please login before contributing to the blog.')
 
     def post(self):
-        subject = self.request.get('subject')
-        content = self.request.get('content')
-        user_id = self.user_id_cookie()
+        if self.nav_bar_action() == False:
+            subject = self.request.get('subject')
+            content = self.request.get('content')
+            user_id = self.user_id_cookie()
 
-        if subject and content and user_id:
-            blogpost = BlogPost(subject = subject, content = content, creator_id = user_id)
-            blogpost.put()
+            if subject and content and user_id:
+                blogpost = BlogPost(subject = subject, content = content, creator_id = user_id)
+                blogpost.put()
 
-            self.redirect('/blog/{}'.format(blogpost.key().id()))
+                self.redirect('/blog/{}'.format(blogpost.key().id()))
 
-        else:
-            self.render('newpost.html', subject = subject, content = content, input_error = "Subject and content, please!")
+            else:
+                self.render('newpost.html', subject = subject, content = content, input_error = "Subject and content, please!")
 
 
 class SignupHandler(Handler):
@@ -277,44 +297,45 @@ class SignupHandler(Handler):
         self.render("signup.html")
 
     def post(self):
-        error = False
-        username = self.request.get('username')
-        password = self.request.get('password')
-        verify = self.request.get('verify')
-        email = self.request.get('email')
-        name_used = self.user_exists(username)
+        if self.nav_bar_action() == False:
+            error = False
+            username = self.request.get('username')
+            password = self.request.get('password')
+            verify = self.request.get('verify')
+            email = self.request.get('email')
+            name_used = self.user_exists(username)
 
-        params = dict(username = username,
-                      email = email)
+            params = dict(username = username,
+                          email = email)
 
-        if len(name_used) > 0:
-            params['error_username_exists'] = "Username already exists."
-            error = True
+            if name_used:
+                params['error_username_exists'] = "Username already exists."
+                error = True
 
-        if not valid_username(username):
-            params['error_username'] = "That's not a valid username."
-            error = True
+            if not valid_username(username):
+                params['error_username'] = "That's not a valid username."
+                error = True
 
-        if not valid_password(password):
-            params['error_password'] = "That wasn't a valid password."
-            error = True
-        elif password != verify:
-            params['error_verify_password'] = "Your passwords didn't match."
-            error = True
+            if not valid_password(password):
+                params['error_password'] = "That wasn't a valid password."
+                error = True
+            elif password != verify:
+                params['error_verify_password'] = "Your passwords didn't match."
+                error = True
 
-        if not valid_email(email):
-            params['error_email'] = "That's not a valid email."
-            error = True
+            if not valid_email(email):
+                params['error_email'] = "That's not a valid email."
+                error = True
 
-        if error:
-            self.render('signup.html', **params)
-        else:
-            pw_hash = make_pw_hash(username, password)
-            user = User(name = username, pw_hash = pw_hash, email = email)
-            user.put()
+            if error:
+                self.render('signup.html', **params)
+            else:
+                pw_hash = make_pw_hash(username, password)
+                user = User(name = username, pw_hash = pw_hash, email = email)
+                user.put()
 
-            self.login(user)
-            self.redirect('/welcome')
+                self.login(user)
+                self.redirect('/welcome')
 
 class WelcomeHandler(Handler):
     def get(self):
@@ -326,6 +347,9 @@ class WelcomeHandler(Handler):
         else:
             self.redirect('../login?error=' + 'Please login first.')
 
+    def post(self):
+        self.nav_bar_action()
+
 
 class LoginHandler(Handler):
     def get(self):
@@ -334,16 +358,17 @@ class LoginHandler(Handler):
         self.render('login.html', error = error)
 
     def post(self):
-        username = self.request.get('username')
-        password = self.request.get('password')
-        user = self.user_exists(username)
+        if self.nav_bar_action() == False:
+            username = self.request.get('username')
+            password = self.request.get('password')
+            user = self.user_exists(username)
 
-        if username and password and len(user) > 0:
-            if valid_pw(username, password, user[0].pw_hash):
-                self.login(user)
-                self.redirect('/welcome')
-        else:
-            self.render('login.html', error = "Invalid login")
+            if username and password and user:
+                if valid_pw(username, password, user.pw_hash):
+                    self.login(user)
+                    self.redirect('/welcome')
+            else:
+                self.render('login.html', error = "Invalid login")
 
 class LogoutHandler(Handler):
     def get(self):
@@ -359,19 +384,20 @@ class EditPostHandler(Handler):
         self.render('edit-post.html', blogpost = blogpost, error = error)
 
     def post(self):
-        subject = self.request.get('subject')
-        content = self.request.get('content')
-        post_id = self.request.get('post_id')
+        if self.nav_bar_action() == False:
+            subject = self.request.get('subject')
+            content = self.request.get('content')
+            post_id = self.request.get('post_id')
 
-        if post_id and subject and content:
-            blogpost = self.get_post_by_id(post_id)
-            blogpost.subject = subject
-            blogpost.content = content
-            blogpost.put()
+            if post_id and subject and content:
+                blogpost = self.get_post_by_id(post_id)
+                blogpost.subject = subject
+                blogpost.content = content
+                blogpost.put()
 
-            self.redirect('/blog')
-        else:
-            self.redirect('/blog/edit-post?error={}&post_id={}'.format('Subject and content can not be empty.', post_id))
+                self.redirect('/blog')
+            else:
+                self.redirect('/blog/edit-post?error={}&post_id={}'.format('Subject and content can not be empty.', post_id))
 
 class EditCommentHandler(Handler):
     def get(self):
@@ -381,17 +407,18 @@ class EditCommentHandler(Handler):
         self.render('edit-comment.html', comment = comment)
 
     def post(self):
-        comment_id = self.request.get('comment_id')
-        content = self.request.get('content')
+        if self.nav_bar_action() == False:
+            comment_id = self.request.get('comment_id')
+            content = self.request.get('content')
 
-        if comment_id and content:
-            comment = self.get_comment_by_id(comment_id)
-            comment.content = content
-            comment.put()
+            if comment_id and content:
+                comment = self.get_comment_by_id(comment_id)
+                comment.content = content
+                comment.put()
 
-            self.redirect('/blog')
-        else:
-            self.redirect('/blog/edit-comment?error={}&comment_id={}'.format('Please enter a comment', comment_id))
+                self.redirect('/blog')
+            else:
+                self.redirect('/blog/edit-comment?error={}&comment_id={}'.format('Please enter a comment', comment_id))
 
 
 app = webapp2.WSGIApplication([('/blog', BlogHandler),
@@ -403,4 +430,4 @@ app = webapp2.WSGIApplication([('/blog', BlogHandler),
                                ('/logout', LogoutHandler),
                                ('/blog/edit-post', EditPostHandler),
                                ('/blog/edit-comment', EditCommentHandler)],
-                                debug=True)
+                                debug = True)

@@ -1,11 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title> Basic Blog</title>
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Basic Blog</title>
 
     <link rel="stylesheet" href="../css/main.css" />
-</head>
-<body>
+{% endblock %}
+
+{% block body %}
     <h1>Basic Blog</h1>
 
     <h3>New Post</h3>
@@ -28,5 +29,4 @@
 
         <input type="submit">
     </form>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% block head %}
+    {% endblock %}
+</head>
+<body>
+    <form method="post">
+        <div class="nav">
+            <input type="submit" name="home" value="Home">
+            <input type="submit" name="newpost" value="New Post">
+            <input id="register_nav" type="submit" name="signup" value="Sign Up">
+            <input type="submit" name="login" value="Log In">
+            <input type="submit" name="logout" value="Log Out">
+        </div>
+    </form>
+    {% block body %}
+    {% endblock %}
+    <footer>
+        <p>&copy; 2017 by Derek Harmann</p>
+    </footer>
+</body>
+</html>

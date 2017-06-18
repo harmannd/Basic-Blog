@@ -1,11 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>User Signup</title>
+{% extends "base.html" %}
 
-    <link rel="stylesheet" href="../css/main.css" />
-</head>
-<body>
+{% block head %}
+    <title>Basic Blog</title>
+
+    <link rel="stylesheet" href="css/main.css" />
+{% endblock %}
+
+{% block body %}
     <h2>Signup</h2>
     <form method="post">
         <div class="group">
@@ -33,7 +34,7 @@
             <div class="error"> {{ error_email }}</div>
         </div>
 
-        <input type="submit">
+        <br>
+        <input class="submit" type="submit">
     </form>
-</body>
-</html>
+{% endblock %}
