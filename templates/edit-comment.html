@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <title>Basic Blog</title>
-
     <link rel="stylesheet" href="../css/main.css" />
 {% endblock %}
 
@@ -13,9 +11,11 @@
     <div class="error">{{ error }}</div>
     <form method="post">
         <input class="hidden" name="comment_id" value="{{ comment.key().id() }}">
+
         <textarea class="edit_comment" name="content">{{ comment.content }}</textarea>
         <br>
         <br>
+
         <input type="submit" name="submit_comment" value="Submit">
     </form>
 {% endblock %}

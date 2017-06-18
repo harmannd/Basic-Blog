@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <title>Basic Blog</title>
-
     <link rel="stylesheet" href="css/main.css" />
 {% endblock %}
 
 {% block body %}
     <h1>Basic Blog</h1>
     <div class="error" name="error">{{ error }}</div>
+
     {% for blogpost in blogposts %}
         <form method="post">
             <input name="creator_id" class="hidden" value="{{ blogpost.creator_id }}">
             <input name="post_id" class="hidden" value="{{ blogpost.key().id() }}">
+
             <div class="container">
                 <h3 name="subject">{{ blogpost.subject }}</h3>
                 <p name="date">{{ blogpost.created.strftime("%d %b %Y") }}</p>
@@ -28,17 +28,20 @@
                 <input type="submit" name="like_post" value="Like">
                 <div class="likes" name="likes">{{ blogpost.likes }}</div>
             </div>
-
         </form>
+
         <div class="comments">
             <h4 class="comment_title">Comments</h4>
+
             <hr class="comment_hr">
+
             {% for comment in comments %}
                 {% if comment.post_id.key() == blogpost.key() %}
                     <form method="post">
                         <div class="single_comment">
                             <input name="creator_id" class="hidden" value="{{ comment.creator_id }}">
                             <input name="comment_id" class="hidden" value="{{ comment.key().id() }}">
+
                             <div class="comment_content">{{ comment.content }}</div>
 
                             <div class="group">
@@ -52,8 +55,9 @@
                 {% endif %}
             {% endfor %}
             <form method="post">
-                <h5 class="new_comment_title">New Comment</h5>
                 <input name="post_id" class="hidden" value="{{ blogpost.key().id() }}">
+
+                <h5 class="new_comment_title">New Comment</h5>
                 <textarea class="comment" name="content"></textarea>
                 <input type="submit" name="submit_comment" value="Submit">
             </form>

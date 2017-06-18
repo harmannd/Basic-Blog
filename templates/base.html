@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <title>Basic Blog</title>
+
     {% block head %}
     {% endblock %}
 </head>
@@ -14,8 +19,10 @@
             <input type="submit" name="logout" value="Log Out">
         </div>
     </form>
+
     {% block body %}
     {% endblock %}
+
     <footer>
         <p>&copy; 2017 by Derek Harmann</p>
     </footer>

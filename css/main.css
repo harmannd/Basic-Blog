@@ -64,7 +64,6 @@ input[type=submit] {
 /*
 * Nav
 */
-
 .nav {
     display: flex;
     justify-content: flex-start;

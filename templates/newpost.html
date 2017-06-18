@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <title>Basic Blog</title>
-
     <link rel="stylesheet" href="../css/main.css" />
 {% endblock %}
 
@@ -15,15 +13,14 @@
         <label>Subject</label>
         <br>
         <input id="subject" type="text" name="subject" value="{{ subject }}">
-
         <br>
         <br>
 
         <label>Blog</label>
         <br>
         <textarea class="post" name="content">{{ content }}</textarea>
-
         <br>
+
         <div class="error">{{ input_error }}</div>
         <br>
 

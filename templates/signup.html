@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <title>Basic Blog</title>
-
     <link rel="stylesheet" href="css/main.css" />
 {% endblock %}
 
 {% block body %}
     <h2>Signup</h2>
+
     <form method="post">
         <div class="group">
             <label class="field">Username</label>
@@ -33,8 +32,8 @@
             <input type="text" name="email">
             <div class="error"> {{ error_email }}</div>
         </div>
-
         <br>
+
         <input class="submit" type="submit">
     </form>
 {% endblock %}
