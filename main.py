@@ -463,8 +463,8 @@ class BlogHandler(Handler):
             already_liked = self.already_liked_post(post_id, user_id)
             blogpost = self.get_post_by_id(post_id)
 
-            if len(already_liked) > 0:
-                already_liked[0].delete()
+            if already_liked:
+                already_liked.delete()
                 blogpost.likes -= 1
                 blogpost.put()
 
@@ -552,8 +552,8 @@ class BlogHandler(Handler):
             already_liked = self.already_liked_comment(comment_id, user_id)
             comment = self.get_comment_by_id(comment_id)
 
-            if len(already_liked) > 0:
-                already_liked[0].delete()
+            if already_liked:
+                already_liked.delete()
                 comment.likes -= 1
                 comment.put()
             else:
@@ -727,6 +727,8 @@ class LoginHandler(Handler):
                 if valid_pw(username, password, user.pw_hash):
                     self.login(user)
                     self.redirect('/welcome')
+                else:
+                    self.render('login.html', error = 'Invalid login')
             else:
                 self.render('login.html', error = 'Invalid login')
 
